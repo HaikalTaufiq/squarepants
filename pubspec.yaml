@@ -1,0 +1,79 @@
+name: square_pants
+description: "A new Flutter project."
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  firebase_auth: ^4.20.0
+  firebase_core: ^2.32.0
+  firebase_database: ^10.5.7
+  percent_indicator: ^4.2.3
+  numberpicker: ^2.1.2
+  lottie: ^3.1.0
+  flutter_launcher_icons: ^0.13.1
+  flutter_local_notifications: ^16.3.3
+  flutter_native_splash: ^2.3.13
+
+  curved_labeled_navigation_bar: ^2.0.2
+  fl_chart: ^0.67.0
+  intl: ^0.19.0
+
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter_native_splash:
+  color: "#252525"
+  color_dark: "#252525"
+  image_dark: assets/images/squarepants.png
+
+  android_12:
+    image_dark: assets/images/squarepants.png
+    icon_background_color: "#252525"
+    icon_background_color_dark: "#252525"
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  color: "#252525"
+  ios: true
+  image_path: "assets/images/squarepants.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/images/squarepants.png"
+    background_color: "#252525"
+    theme_color: "#252525"
+  windows:
+    generate: true
+    image_path: "assets/images/squarepants.png"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/images/squarepants.png"
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/json/
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-Black.ttf
+        - asset: assets/fonts/Poppins-Bold.ttf
+        - asset: assets/fonts/Poppins-ExtraBold.ttf
+        - asset: assets/fonts/Poppins-ExtraLight.ttf
+        - asset: assets/fonts/Poppins-Light.ttf
+        - asset: assets/fonts/Poppins-Medium.ttf
+        - asset: assets/fonts/Poppins-SemiBold.ttf

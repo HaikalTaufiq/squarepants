@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "339029969265",
+    "firebase_url": "https://square-pants-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "square-pants",
+    "storage_bucket": "square-pants.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:339029969265:android:cf576d3262198dcfb34ed0",
+        "android_client_info": {
+          "package_name": "com.example.square_pants"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCY3uEgaIiwBKv_evPQSg67zUvuiFjI9d0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
