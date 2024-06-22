@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/widgets.dart';
@@ -65,6 +67,29 @@ class _ScheculeState extends State<Schecule> {
       });
     }).catchError((error) {
       print('Failed to remove time from database: $error');
+    });
+  }
+
+  void _updateTimeInDatabase(int index, TimeOfDay newTime) {
+    if (index < 0 || index >= scheduleKeys.length) {
+      print('Invalid index: $index');
+      return;
+    }
+
+    String key = scheduleKeys[index];
+    final String formattedTime =
+        '${newTime.hour.toString().padLeft(2, '0')}:${newTime.minute.toString().padLeft(2, '0')}';
+
+    databaseReference
+        .child('schedules')
+        .child(key)
+        .update({'time': formattedTime}).then((_) {
+      print('Time updated in database: $formattedTime');
+      setState(() {
+        scheduleTimes[index] = newTime;
+      });
+    }).catchError((error) {
+      print('Failed to update time in database: $error');
     });
   }
 
@@ -174,101 +199,211 @@ class _ScheculeState extends State<Schecule> {
                 child: ListView.builder(
                   itemCount: scheduleTimes.length,
                   itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Center(
-                        child: Container(
-                          margin: EdgeInsets.only(bottom: 5),
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 2, vertical: 0),
-                          decoration: BoxDecoration(
-                            color: Color(0xffffffff),
-                            border:
-                                Border.all(color: Color(0xffffffff), width: 5),
-                            borderRadius: BorderRadius.all(Radius.circular(24)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                height: 7,
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Transform.translate(
-                                    offset: Offset(9, 0),
-                                    child: Row(
-                                      children: [
-                                        Transform.translate(
-                                          offset: Offset(-2, 0),
-                                          child: Icon(
-                                            Icons.label,
-                                            color: Color(0xff12171D),
-                                            size: 24,
-                                          ),
+                    var scheduleTime = scheduleTimes[index].format(context);
+                    return StatefulBuilder(builder:
+                        (BuildContext context, StateSetter setModalState) {
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 25),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                        decoration: BoxDecoration(
+                          color: Color(0xffFFFFFF),
+                          borderRadius: BorderRadius.all(Radius.circular(24)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 7),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Transform.translate(
+                                  offset: Offset(9, 0),
+                                  child: Row(
+                                    children: [
+                                      Transform.translate(
+                                        offset: Offset(-2, 0),
+                                        child: Icon(
+                                          Icons.label,
+                                          color: Color(0xff12171D),
+                                          size: 24,
                                         ),
-                                        Text(
-                                          'Feed',
-                                          style: TextStyle(
-                                            color: Color(0xff12171D),
-                                            fontFamily: "poppins",
-                                            fontSize: 14,
-                                          ),
+                                      ),
+                                      Text(
+                                        'Feed',
+                                        style: TextStyle(
+                                          color: Color(0xff12171D),
+                                          fontFamily: "poppins",
+                                          fontSize: 14,
                                         ),
-                                      ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Transform.scale(
+                                  scale: 0.7,
+                                  child: Switch(
+                                    onChanged: (bool value) {
+                                      // Implement the logic to update the switch status in the database
+                                    },
+                                    value: true,
+                                    activeColor: Color(0xff12171D),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                showModalBottomSheet(
+                                  backgroundColor: Color(0xffF9F9F9),
+                                  useRootNavigator: true,
+                                  context: context,
+                                  clipBehavior: Clip.antiAlias,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(24),
                                     ),
                                   ),
-                                  SizedBox(
-                                    height: 10,
-                                  ),
-                                  Transform.scale(
-                                    scale: 0.7,
-                                    child: Switch(
-                                      onChanged: (bool value) {},
-                                      value: true,
-                                      activeColor: Color(0xff12171D),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(left: 10, bottom: 10),
+                                  builder: (context) {
+                                    return StatefulBuilder(
+                                      builder: (context, setModalState) {
+                                        return Container(
+                                          padding: EdgeInsets.all(0),
+                                          child: Column(
+                                            children: [
+                                              SizedBox(height: 10),
+                                              ListTile(
+                                                title: Center(
+                                                  child: Column(
+                                                    children: [
+                                                      Container(
+                                                        height: 3,
+                                                        width: 40,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color:
+                                                              Color(0xff12171D),
+                                                          borderRadius:
+                                                              BorderRadius.all(
+                                                            Radius.circular(30),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 10),
+                                                      Text(
+                                                        'Edit Time',
+                                                        style: TextStyle(
+                                                          color:
+                                                              Color(0xff212121),
+                                                          fontFamily: "poppins",
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        'Feeding Schedule',
+                                                        style: TextStyle(
+                                                          color:
+                                                              Color(0xff5F5F5F),
+                                                          fontFamily: "poppins",
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              NumberPickerWidget(
+                                                hour: _selectedHour,
+                                                minute: _selectedMinute,
+                                                timeFormat: _selectedTimeFormat,
+                                                onHourChanged: (value) {
+                                                  setModalState(() {
+                                                    _selectedHour = value;
+                                                  });
+                                                },
+                                                onMinuteChanged: (value) {
+                                                  setModalState(() {
+                                                    _selectedMinute = value;
+                                                  });
+                                                },
+                                                onTimeFormatChanged: (value) {
+                                                  setModalState(() {
+                                                    _selectedTimeFormat = value;
+                                                  });
+                                                },
+                                              ),
+                                              FloatingActionButton.extended(
+                                                backgroundColor:
+                                                    Color(0xFF25A1AE),
+                                                onPressed: () {
+                                                  TimeOfDay updatedTime =
+                                                      TimeOfDay(
+                                                    hour: _selectedHour,
+                                                    minute: _selectedMinute,
+                                                  );
+                                                  _updateTimeInDatabase(
+                                                      index, updatedTime);
+                                                  Navigator.pop(context);
+                                                },
+                                                label: Text(
+                                                  'Save',
+                                                  style: TextStyle(
+                                                    fontFamily: "poppins",
+                                                    color: Colors.white,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                              child: Transform.translate(
+                                offset: Offset(0, -10),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      scheduleTimes[index].format(context),
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xff12171D),
-                                        fontFamily: "poppins",
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 10),
+                                      child: Text(
+                                        scheduleTime,
+                                        style: TextStyle(
+                                          color: Color(0xff12171D),
+                                          fontFamily: 'poppins',
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(right: 17),
-                                      child: GestureDetector(
-                                        onTap: () {
+                                      padding: const EdgeInsets.only(right: 5),
+                                      child: IconButton(
+                                        icon: Icon(Icons.delete),
+                                        color: Color(0xff12171D),
+                                        onPressed: () {
                                           _deleteTimeFromDatabase(index);
                                         },
-                                        child: Icon(
-                                          Icons.delete,
-                                          color: Color(0xff12171D),
-                                          size: 25,
-                                        ),
                                       ),
-                                    )
+                                    ),
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                            SizedBox(height: 5),
+                          ],
                         ),
-                      ),
-                    );
+                      );
+                    });
                   },
                 ),
               ),

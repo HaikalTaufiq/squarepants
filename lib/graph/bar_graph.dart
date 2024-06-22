@@ -44,12 +44,12 @@ class MyBarGraph extends StatelessWidget {
                   barRods: [
                     BarChartRodData(
                         toY: data.y,
-                        color: Colors.white,
+                        color: Color(0xff12171D),
                         width: 19,
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
                           toY: 100,
-                          color: Color(0xff455A64).withOpacity(0.7),
+                          color: Color(0xffE4E4E4),
                         )),
                   ],
                 ))
@@ -61,7 +61,7 @@ class MyBarGraph extends StatelessWidget {
 
 Widget getBottomTitles(double value, TitleMeta meta) {
   const style = TextStyle(
-      color: Colors.white,
+      color: Color(0xff12171D),
       fontFamily: 'poppins',
       fontWeight: FontWeight.w400,
       fontSize: 13);

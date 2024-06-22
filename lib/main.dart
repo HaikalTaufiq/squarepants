@@ -6,10 +6,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:square_pants/pages/home_page.dart';
+import 'package:square_pants/service/notif_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(); // Initialize Firebase
+  // Initialize Notification Service
+  await NotificationService.initializeNotif();
   runApp(const MainApp());
 }
 

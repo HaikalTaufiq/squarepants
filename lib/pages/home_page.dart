@@ -6,6 +6,7 @@ import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:square_pants/pages/scedule_page.dart';
 import 'package:square_pants/pages/statistics_page.dart';
 import 'package:square_pants/service/notif_service.dart';
@@ -85,6 +86,23 @@ class _HomePageState extends State<HomePage> {
       });
     }).catchError((error) {
       print('Error updating switch state: $error');
+    });
+  }
+
+  void _addFeedingData() {
+    final DateTime now = DateTime.now();
+    final DateFormat formatter = DateFormat('HH:mm, dd-MM-yyyy');
+    final String formattedTimestamp = formatter.format(now);
+
+    final feedingData = {
+      'amount': '10 gram',
+      'timestamp': formattedTimestamp,
+    };
+
+    databaseReference.child('feedings').push().set(feedingData).then((_) {
+      print('Feeding data added: $feedingData');
+    }).catchError((error) {
+      print('Error adding feeding data: $error');
     });
   }
 
@@ -216,6 +234,7 @@ class _HomePageState extends State<HomePage> {
                             child: Switch(
                               value: switchState, // Nilai switch (true/false)
                               onChanged: (value) {
+                                _addFeedingData();
                                 _updateSwitchState(value);
                                 NotificationService.showNotif(
                                     "Feeding", "The Fish has been fed");

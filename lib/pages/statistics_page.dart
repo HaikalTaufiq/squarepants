@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, sort_child_properties_last, prefer_const_literals_to_create_immutables
 
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:square_pants/graph/bar_graph.dart';
 
@@ -24,6 +26,8 @@ class _StatisticsState extends State<Statistics> {
   String userId = 'Haikal'; // Store user ID
   double temperature = 0.0;
   double humidity = 0.0;
+  List<FeedingData> feedingDataList = [];
+  List<String> feedingKeys = [];
 
   StreamSubscription<DatabaseEvent>? _sensorDataSubscription;
 
@@ -41,6 +45,49 @@ class _StatisticsState extends State<Statistics> {
       } else {
         print('No user signed in');
       }
+    });
+  }
+
+  void _fetchFeedingsData() async {
+    databaseReference.child('feedings').get().then((DataSnapshot snapshot) {
+      if (snapshot.exists) {
+        Map<String, dynamic> feedings =
+            Map<String, dynamic>.from(snapshot.value as Map);
+        List<FeedingData> loadedFeedings = [];
+        List<String> loadedKeys = []; // Initialize loadedKeys
+        feedings.forEach((key, value) {
+          String amount = value['amount'];
+          String timestampString = value['timestamp'];
+          DateTime timestamp =
+              DateFormat('HH:mm, dd-MM-yyyy').parse(timestampString);
+          loadedFeedings.add(FeedingData(amount: amount, timestamp: timestamp));
+          loadedKeys.add(key); // Store the key
+        });
+        setState(() {
+          feedingDataList = loadedFeedings;
+          feedingKeys = loadedKeys; // Set loadedKeys to feedingKeys
+        });
+      }
+    }).catchError((error) {
+      print('Failed to fetch feedings data from database: $error');
+    });
+  }
+
+  void _deleteFeedingData(int index) {
+    if (index < 0 || index >= feedingKeys.length) {
+      print('Invalid index: $index');
+      return;
+    }
+
+    String key = feedingKeys[index];
+    databaseReference.child('feedings').child(key).remove().then((_) {
+      print('Feeding data removed from database');
+      setState(() {
+        feedingDataList.removeAt(index);
+        feedingKeys.removeAt(index);
+      });
+    }).catchError((error) {
+      print('Failed to remove feeding data from database: $error');
     });
   }
 
@@ -333,14 +380,144 @@ class _StatisticsState extends State<Statistics> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 25, top: 25),
+                  padding: const EdgeInsets.all(25),
                   child: Container(
                     width: 400,
-                    height: 250,
-                    child: Center(
-                      child: MyBarGraph(
-                        weeklySummary: weeklySummary,
-                      ),
+                    height: 350,
+                    decoration: BoxDecoration(
+                      color: Color(0xffFFFFFF),
+                      borderRadius: BorderRadius.all(Radius.circular(24)),
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 25, right: 12, top: 5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                getFormattedDate(),
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  color: Colors
+                                      .black, // Changed from white to black for visibility
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  _fetchFeedingsData(); // Fetch data before showing modal
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return StatefulBuilder(
+                                        builder: (BuildContext context,
+                                            StateSetter setModalState) {
+                                          return Container(
+                                            height: 500,
+                                            width: double.infinity,
+                                            padding: EdgeInsets.all(16.0),
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  "Amount History",
+                                                  style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Expanded(
+                                                  child: ListView.builder(
+                                                    itemCount:
+                                                        feedingDataList.length,
+                                                    itemBuilder:
+                                                        (context, index) {
+                                                      final feeding =
+                                                          feedingDataList[
+                                                              index];
+                                                      return ListTile(
+                                                        title: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Text(
+                                                              DateFormat(
+                                                                      'HH:mm a, dd-MM-yyyy ')
+                                                                  .format(feeding
+                                                                      .timestamp),
+                                                              style: TextStyle(
+                                                                  fontFamily:
+                                                                      'poppins',
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500),
+                                                            ),
+                                                            IconButton(
+                                                              icon: Icon(
+                                                                  Icons.delete,
+                                                                  color: Colors
+                                                                      .black),
+                                                              onPressed: () {
+                                                                _deleteFeedingData(
+                                                                    index);
+                                                                setModalState(
+                                                                    () {
+                                                                  feedingDataList
+                                                                      .removeAt(
+                                                                          index);
+                                                                  feedingKeys
+                                                                      .removeAt(
+                                                                          index);
+                                                                });
+                                                              },
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        subtitle: Text(
+                                                          feeding.amount,
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  'poppins'),
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                                icon: Transform.rotate(
+                                  angle: pi /
+                                      2, // Rotate icon 90 degrees for down arrow
+                                  child: Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 18,
+                                    color: Colors
+                                        .black, // Changed from white to black for visibility
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                top: 5, bottom: 14), // Adjust padding as needed
+                            child: MyBarGraph(
+                              weeklySummary: weeklySummary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -351,7 +528,7 @@ class _StatisticsState extends State<Statistics> {
                     padding: const EdgeInsets.only(left: 25, bottom: 25),
                     children: [
                       Container(
-                        width: 350,
+                        width: 342,
                         decoration: BoxDecoration(
                             color: Color(0xffFFFFFF),
                             border:
@@ -370,8 +547,7 @@ class _StatisticsState extends State<Statistics> {
                                   lineWidth: 8,
                                   percent: 0.67,
                                   progressColor: Color(0xff12171D),
-                                  backgroundColor:
-                                      Color(0xff455A64).withOpacity(0.7),
+                                  backgroundColor: Color(0xffE4E4E4),
                                   circularStrokeCap: CircularStrokeCap.round,
                                   center: Text(
                                     '67%',
@@ -413,9 +589,9 @@ class _StatisticsState extends State<Statistics> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(left: 40, right: 40),
+                        padding: const EdgeInsets.only(left: 40, right: 27),
                         child: Container(
-                          width: 350,
+                          width: 342,
                           decoration: BoxDecoration(
                               color: Color(0xffFFFFFF),
                               border: Border.all(
@@ -434,8 +610,7 @@ class _StatisticsState extends State<Statistics> {
                                     lineWidth: 8,
                                     percent: 0.67,
                                     progressColor: Color(0xff12171D),
-                                    backgroundColor:
-                                        Color(0xff455A64).withOpacity(0.7),
+                                    backgroundColor: Color(0xffE4E4E4),
                                     circularStrokeCap: CircularStrokeCap.round,
                                     center: Text(
                                       '67%',
@@ -491,4 +666,23 @@ class _StatisticsState extends State<Statistics> {
       ),
     );
   }
+}
+
+class FeedingData {
+  final String amount;
+  final DateTime timestamp;
+
+  FeedingData({required this.amount, required this.timestamp});
+}
+
+String getFormattedDate() {
+  // Mendapatkan tanggal sekarang
+  DateTime now = DateTime.now();
+
+  // Mengubah tanggal menjadi format bulan dan tahun
+  String bulan = DateFormat('MMMM').format(now);
+  String tahun = DateFormat('yyyy').format(now);
+
+  // Mengembalikan teks dengan format bulan dan tahun
+  return '$bulan $tahun';
 }
